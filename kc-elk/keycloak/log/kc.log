@@ -1,0 +1,2 @@
+2025-04-16 13:47:00,345 DEBUG [org.keycloak.events.jpa.JpaEventStoreProvider] (Timer-0) Cleared 0 expired events in all realms
+2025-04-16 14:02:00,346 DEBUG [org.keycloak.events.jpa.JpaEventStoreProvider] (Timer-0) Cleared 0 expired events in all realms
