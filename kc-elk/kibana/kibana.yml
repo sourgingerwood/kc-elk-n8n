@@ -1,0 +1,27 @@
+xpack.encryptedSavedObjects.encryptionKey: "thirty-two-or-more-random-characters"
+server.host: "0.0.0.0"
+telemetry.enabled: "true"
+xpack.fleet.packages:
+  - name: fleet_server
+    version: latest
+  - name: system
+    version: latest
+xpack.fleet.agentPolicies:
+  - name: Fleet-Server-Policy
+    id: fleet-server-policy
+    namespace: default
+    package_policies:
+      - name: fleet_server-1
+        package:
+          name: fleet_server
+# xpack.fleet.agents.elasticsearch.hosts: ["https://ecp-elasticsearch:9200"]
+
+xpack.fleet.outputs:
+  - id: fleet-default-output
+    name: default
+    type: elasticsearch
+    hosts: [ https://ecp-elasticsearch:9200 ]
+    # openssl x509 -fingerprint -sha256 -noout -in config/certs/ca/ca.crt (colons removed)
+    ca_trusted_fingerprint: 725B6B4164784FD72CA21CF5B05E1AC20D0EDB49B1F16952EC45CAFFED7DC0FB
+    is_default: true
+    is_default_monitoring: true

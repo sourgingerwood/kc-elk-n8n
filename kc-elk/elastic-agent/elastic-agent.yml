@@ -1,0 +1,16 @@
+
+
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /usr/share/elastic-agent/kc.log
+      
+outputs:
+  default:
+    type: elasticsearch
+    hosts: '${ELASTIC_HOSTS}'
+    username: '${ELASTIC_USERNAME}'
+    password: '${ELASTIC_PASSWORD}'
+    preset: balanced
+    

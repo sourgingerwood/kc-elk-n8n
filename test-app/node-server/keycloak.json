@@ -1,0 +1,6 @@
+{
+    "realm": "test-realm",
+    "auth-server-url": "https://localhost:8443",
+    "resource": "test-app"
+  }
+  
