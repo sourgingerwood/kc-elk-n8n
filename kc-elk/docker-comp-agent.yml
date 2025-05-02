@@ -1,0 +1,12 @@
+services:
+  elastic-agent:
+    image: docker.elastic.co/elastic-agent/elastic-agent-slim:9.0.0
+    container_name: elastic-agent
+#    depends_on:
+#      - elasticsearch
+#      - kibana
+    user: root
+    volumes:
+      - ./elastic-agent/elastic-agent.yml:/usr/share/elastic-agent/elastic-agent.yml:z
+      - ./elastic-agent/certs:/usr/share/elastic-agent/certs:ro
+      - ./keycloak/log/kc.log:/opt/keycloak/log/kc.log

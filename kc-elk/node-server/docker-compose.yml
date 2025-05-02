@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: my-node-app
+    ports:
+      - "5500:5500"
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - NODE_ENV=development
+    command: sh -c "cd /usr/src/app/ && ./init_kc.sh && npm start"

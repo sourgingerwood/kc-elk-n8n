@@ -1,0 +1,23 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.1
+    user: root
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    networks:
+      cttn:
+        ipv4_address: 172.40.0.100
+    ports:
+      - "8443:8443"
+      - "8080:8080"
+    volumes:
+      - ./keycloak/conf:/opt/keycloak/conf:rw
+      - ./keycloak/log:/opt/keycloak/log:rw
+networks:
+  cttn:
+    ipam:
+      config:
+        - subnet: 172.40.0.0/24
+          gateway: 172.40.0.1

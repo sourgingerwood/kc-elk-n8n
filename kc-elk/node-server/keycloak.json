@@ -1,0 +1,6 @@
+{
+    "realm": "test-realm",
+    "auth-server-url": "https://kc.ctt.tn:8443",
+    "resource": "test-app"
+  }
+  

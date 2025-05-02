@@ -5,7 +5,7 @@ services:
     volumes:
       - certs:/usr/share/elasticsearch/config/certs:z
       - ./kibana/kibana.yml:/usr/share/elasticsearch/kibana.yml:z
-    user: root
+    user: "0"
     command: >
       bash -c '
         if [ x${ELASTIC_PASSWORD} == x ]; then
@@ -52,9 +52,9 @@ services:
         find . -type d -exec chmod 750 \{\} \;;
         find . -type f -exec chmod 640 \{\} \;;
         echo "Waiting for Elasticsearch availability";
-        until curl --cacert config/certs/ca/ca.crt https://ecp-elasticsearch:9200 | grep -q "missing authentication credentials"; do sleep 10; done;
+        until curl --cacert config/certs/ca/ca.crt http://ecp-elasticsearch:9200 | grep -q "missing authentication credentials"; do sleep 10; done;
         echo "Setting kibana_system password";
-        until curl -s -X POST --cacert config/certs/ca/ca.crt -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" https://ecp-elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u elastic:${ELASTIC_PASSWORD} -H "Content-Type: application/json" http://ecp-elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
         echo "writing fingerprint to kibana.yml";
         FINGERPRINT=$$(openssl x509 -noout -fingerprint -sha256 -in config/certs/ca/ca.crt | cut -d'=' -f2 | tr -d ':')
         sed "s/^    ca_trusted_fingerprint:.*/    ca_trusted_fingerprint: $$FINGERPRINT/" /usr/share/elasticsearch/kibana.yml > /tmp/kibana.yml && cat /tmp/kibana.yml > /usr/share/elasticsearch/kibana.yml
@@ -69,30 +69,6 @@ services:
       cttn:
         ipv4_address: 172.40.0.5
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.2.1
-    user: root
-    command: start-dev
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_HEALTH_ENABLED: true
-    networks:
-      cttn:
-        ipv4_address: 172.40.0.100
-    ports:
-      - "8443:8443"
-      - "8080:8080"
-      - "9000:9000"
-    volumes:
-      - ./keycloak/conf:/opt/keycloak/conf:rw
-      - ./keycloak/log:/opt/keycloak/log:rw
-    healthcheck:
-      test: ["CMD", "sh", "-c", "echo > /dev/tcp/localhost/9000"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
 #  ssh-server:
 #    image: linuxserver/openssh-server
 #    container_name: ssh-server
@@ -108,18 +84,19 @@ services:
 #    volumes:
 #      - ./ssh_config/authorized_keys:/root/.ssh/authorized_keys:ro
 #    restart: unless-stopped
-#   server:
-#     depends_on:
-#       setup:
-#         condition: service_healthy
-#     image: nginx:alpine
-#     container_name: CA
-#     ports:
-#       - "7777:80"
-#     volumes:
-#       - certs:/usr/share/nginx/html
-#       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-#     command: ["sh","-c","chmod -R +rx /usr/share/nginx/html && nginx -g 'daemon off;'"]
+
+  server:
+    depends_on:
+      setup:
+        condition: service_healthy
+    image: nginx:alpine
+    container_name: CA
+    ports:
+      - "7777:80"
+    volumes:
+      - certs:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    command: ["sh","-c","chmod -R +rx /usr/share/nginx/html && nginx -g 'daemon off;'"]
 
   elasticsearch:
     depends_on:
@@ -139,18 +116,18 @@ services:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - bootstrap.memory_lock=true
       - discovery.type=single-node
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=true
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
       - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.key
       - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.chain.pem
       - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca/ca.crt
-      - xpack.security.http.ssl.verification_mode=none
+      - xpack.security.http.ssl.verification_mode=certificate
       - xpack.security.http.ssl.client_authentication=optional
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.key
       - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.crt
       - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca/ca.crt
-      - xpack.security.transport.ssl.verification_mode=none
+      - xpack.security.transport.ssl.verification_mode=certificate
       - xpack.security.transport.ssl.client_authentication=optional
       - xpack.license.self_generated.type=${LICENSE}
     mem_limit: ${MEM_LIMIT}
@@ -166,7 +143,7 @@ services:
         ]
       interval: 10s
       timeout: 10s
-      retries: 10
+      retries: 7
     networks:
       cttn:
         ipv4_address: 172.40.0.10
@@ -207,98 +184,12 @@ services:
     networks:
       cttn:
         ipv4_address: 172.40.0.30
-
-#### AGENT #####
-  elastic-agent:
-    image: docker.elastic.co/elastic-agent/elastic-agent-slim:9.0.0
-    container_name: elastic-agent
-    depends_on:
-      - elasticsearch
-      - kibana
-    user: root
-    volumes:
-      - ./elastic-agent/elastic-agent.yml:/usr/share/elastic-agent/elastic-agent.yml:z
-      - ./elastic-agent/certs:/usr/share/elastic-agent/certs:ro
-      - ./keycloak/log/kc.log:/opt/keycloak/log/kc.log
-    networks:
-      cttn:
-        ipv4_address: 172.40.0.111
-
-#   nginx:
-#     image: nginx:alpine
-#     container_name: nginx_proxy
-#     restart: always
-#     ports:
-#       - "80:80"
-#       - "443:443"
-#     volumes:
-#       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-#       - ./nginx/certs:/etc/nginx/certs:ro
-#     networks:
-#       cttn:
-#         ipv4_address: 172.40.0.70
-  # app:
-  #   build: 
-  #     context: ./node-server
-  #     # dockerfile: app.Dockerfile
-  #   container_name: my-node-app
-  #   user: root
-  #   depends_on: 
-  #     keycloak:
-  #       condition: service_healthy
-  #   ports:
-  #     - "5500:5500"
-  #   volumes:
-  #     - ./node-server:/usr/src/app
-  #   command: sh -c "cd /usr/src/app/ && ./init_kc.sh && npm start"
-  #   environment:
-  #     - NODE_ENV=development
-  #   networks:
-  #     cttn:
-  #       ipv4_address: 172.40.0.112
-
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: n8n
-    ports:
-      - "5678:5678"
-    environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=admin
-      - N8N_PORT=5678
-      - N8N_SECURE_COOKIE=false
-      - WEBHOOK_URL=${N8N_URL}
-      - GENERIC_TIMEZONE=Europe/Paris
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-      - N8N_PROTOCOL=https
-#      - N8N_HOST=${N8N_HOST}
-#      - N8N_EDITOR_BASE_URL=${N8N_URL}
-#      - N8N_PUBLIC_API_BASE_URL=${N8N_URL}
-      - WEBHOOK_TUNNEL_URL=${N8N_URL}
-      - N8N_LOG_LEVEL=info
-      - NODE_ENV=production
-      - N8N_RUNNERS_ENABLED=true
-      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
-      - N8N_DIAGNOSTICS_ENABLED=false
-      - N8N_GENERIC_TIMEZONE=Europe/Paris
-      - N8N_REDIS_ENABLED=false
-      - N8N_METRICS=true
-      - N8N_ALLOW_ROOT=true
-      - N8N_FLAGS=--tunnel --trust-proxy
-    volumes:
-      - n8n_data:/home/node/.n8n
-      - /home/manou/kc-elk-n8n/kc-elk/.env:/home/.env:rw
-    restart: always
-    networks:
-      cttn:
-        ipv4_address: 172.40.0.60
-
 volumes:
-  n8n_data:
-    driver: local
   certs:
     driver: local
+#    driver_opts:
+#      type: none
+#      device: ./certs
   esdata01:
     driver: local
   kibanadata:

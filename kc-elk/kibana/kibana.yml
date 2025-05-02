@@ -1,6 +1,14 @@
 xpack.encryptedSavedObjects.encryptionKey: "thirty-two-or-more-random-characters"
 server.host: "0.0.0.0"
 telemetry.enabled: "true"
+# server.basePath: "/"
+server.rewriteBasePath: false
+server.publicBaseUrl: "https://kibana.ctt.tn"
+xpack.security.sameSiteCookies: "None"
+xpack.security.secureCookies: false
+xpack.security.session.idleTimeout: "4h"
+xpack.security.session.lifespan: "8h"
+
 xpack.fleet.packages:
   - name: fleet_server
     version: latest
@@ -22,6 +30,6 @@ xpack.fleet.outputs:
     type: elasticsearch
     hosts: [ https://ecp-elasticsearch:9200 ]
     # openssl x509 -fingerprint -sha256 -noout -in config/certs/ca/ca.crt (colons removed)
-    ca_trusted_fingerprint: 725B6B4164784FD72CA21CF5B05E1AC20D0EDB49B1F16952EC45CAFFED7DC0FB
+    ca_trusted_fingerprint: D8067AAC0CC8647EEC88B89434192C833DA18FD7D64D2F84B186CE0DAD465815
     is_default: true
     is_default_monitoring: true
