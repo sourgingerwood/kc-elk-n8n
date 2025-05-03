@@ -237,25 +237,25 @@ services:
 #     networks:
 #       cttn:
 #         ipv4_address: 172.40.0.70
-  # app:
-  #   build: 
-  #     context: ./node-server
-  #     # dockerfile: app.Dockerfile
-  #   container_name: my-node-app
-  #   user: root
-  #   depends_on: 
-  #     keycloak:
-  #       condition: service_healthy
-  #   ports:
-  #     - "5500:5500"
-  #   volumes:
-  #     - ./node-server:/usr/src/app
-  #   command: sh -c "cd /usr/src/app/ && ./init_kc.sh && npm start"
-  #   environment:
-  #     - NODE_ENV=development
-  #   networks:
-  #     cttn:
-  #       ipv4_address: 172.40.0.112
+  app:
+    build:
+      context: ./node-server
+      dockerfile: app.Dockerfile
+    container_name: my-node-app
+    user: root
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    ports:
+      - "5500:5500"
+    volumes:
+      - ./node-server:/usr/src/app
+    command: sh -c "cd /usr/src/app/ && ./init_kc.sh && npm install && npm start"
+    environment:
+      - NODE_ENV=development
+    networks:
+      cttn:
+        ipv4_address: 172.40.0.112
 
   n8n:
     image: n8nio/n8n:latest

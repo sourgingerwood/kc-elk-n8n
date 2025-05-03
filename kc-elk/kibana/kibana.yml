@@ -30,6 +30,6 @@ xpack.fleet.outputs:
     type: elasticsearch
     hosts: [ https://ecp-elasticsearch:9200 ]
     # openssl x509 -fingerprint -sha256 -noout -in config/certs/ca/ca.crt (colons removed)
-    ca_trusted_fingerprint: D8067AAC0CC8647EEC88B89434192C833DA18FD7D64D2F84B186CE0DAD465815
+    ca_trusted_fingerprint: D28CF5150F0B5F242FD64F058680136472E64BDC461FC9920B0B3341C539DB8B
     is_default: true
     is_default_monitoring: true
