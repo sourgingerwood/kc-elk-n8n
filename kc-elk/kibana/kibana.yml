@@ -1,35 +1,51 @@
-xpack.encryptedSavedObjects.encryptionKey: "thirty-two-or-more-random-characters"
+# xpack.encryptedSavedObjects.encryptionKey: "thirty-two-or-more-random-characters"
+xpack.encryptedSavedObjects.encryptionKey: "JYMjOIkm0nuH+/weQTMkFG2alWff44yCtU11/i3VwUU="
+xpack.reporting.encryptionKey: "JYMjOIkm0nuH+/weQTMkFG2alWff44yCtU11/i3VwUU="
+xpack.security.encryptionKey: "JYMjOIkm0nuH+/weQTMkFG2alWff44yCtU11/i3VwUU="
+# indique à Kibana sous quelle URL il doit se rendre accessible
+server.publicBaseUrl: "https://kibana.ctt.tn/"    
 server.host: "0.0.0.0"
-telemetry.enabled: "true"
-# server.basePath: "/"
-server.rewriteBasePath: false
-server.publicBaseUrl: "https://kibana.ctt.tn"
-xpack.security.sameSiteCookies: "None"
-xpack.security.secureCookies: false
-xpack.security.session.idleTimeout: "4h"
-xpack.security.session.lifespan: "8h"
+logging:
+  appenders:
+    console:
+      type: console
+      layout:
+        type: pattern
+  root:
+    appenders: [console]
+    level: info
 
-xpack.fleet.packages:
-  - name: fleet_server
-    version: latest
-  - name: system
-    version: latest
-xpack.fleet.agentPolicies:
-  - name: Fleet-Server-Policy
-    id: fleet-server-policy
-    namespace: default
-    package_policies:
-      - name: fleet_server-1
-        package:
-          name: fleet_server
+
+# telemetry.enabled: "true"
+# server.basePath: "/"
+# server.rewriteBasePath: false
+# server.publicBaseUrl: "https://kibana.ctt.tn"
+# xpack.security.sameSiteCookies: "None"
+# xpack.security.secureCookies: false
+# xpack.security.session.idleTimeout: "4h"
+# xpack.security.session.lifespan: "8h"
+
+# xpack.fleet.packages:
+#   - name: fleet_server
+#     version: latest
+#   - name: system
+#     version: latest
+# xpack.fleet.agentPolicies:
+#   - name: Fleet-Server-Policy
+#     id: fleet-server-policy
+#     namespace: default
+#     package_policies:
+#       - name: fleet_server-1
+#         package:
+#           name: fleet_server
 # xpack.fleet.agents.elasticsearch.hosts: ["https://ecp-elasticsearch:9200"]
 
-xpack.fleet.outputs:
-  - id: fleet-default-output
-    name: default
-    type: elasticsearch
-    hosts: [ https://ecp-elasticsearch:9200 ]
-    # openssl x509 -fingerprint -sha256 -noout -in config/certs/ca/ca.crt (colons removed)
-    ca_trusted_fingerprint: D28CF5150F0B5F242FD64F058680136472E64BDC461FC9920B0B3341C539DB8B
-    is_default: true
-    is_default_monitoring: true
+# xpack.fleet.outputs:
+#   - id: fleet-default-output
+#     name: default
+#     type: elasticsearch
+#     hosts: [ https://ecp-elasticsearch:9200 ]
+#     # openssl x509 -fingerprint -sha256 -noout -in config/certs/ca/ca.crt (colons removed)
+#     ca_trusted_fingerprint: D28CF5150F0B5F242FD64F058680136472E64BDC461FC9920B0B3341C539DB8B
+#     is_default: true
+#     is_default_monitoring: true

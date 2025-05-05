@@ -10,7 +10,7 @@
 outputs:
   default:
     type: elasticsearch
-    hosts: [https://172.40.0.10:9200]
+    hosts: [https://172.40.0.11:9200]
     username: "elastic"
     password: "changeme"
     preset: balanced
