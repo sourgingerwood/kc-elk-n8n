@@ -1,6 +1,10 @@
 {
-    "realm": "test-realm",
-    "auth-server-url": "https://kc.ctt.tn:8443",
-    "resource": "test-app"
-  }
-  
+  "realm": "test-realm",
+  "auth-server-url": "https://kc.ctt.tn:8443/",
+  "ssl-required": "external",
+  "resource": "test-app",
+  "credentials": {
+    "secret": "LE_CLIENT_SECRET"
+  },
+  "confidential-port": 0
+}

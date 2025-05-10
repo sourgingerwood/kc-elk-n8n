@@ -186,6 +186,8 @@ services:
       - ./elastic-agent/elastic-agent.yml:/usr/share/elastic-agent/elastic-agent.yml:z
       - ./elastic-agent/certs:/usr/share/elastic-agent/certs:ro
       - ./keycloak/log/kc.log:/opt/keycloak/log/kc.log
+      - /var/log/nginx/access.log:/var/log/nginx/access.log
+      - /var/log/nginx/error.log:/var/log/nginx/error.log
     networks:
       cttn:
         ipv4_address: 172.40.0.66
@@ -214,6 +216,8 @@ services:
         condition: service_healthy
     ports:
       - "5500:5500"
+    extra_hosts:
+      - "kc.ctt.tn:172.40.0.44"
     volumes:
       - ./node-server:/usr/src/app
     command: sh -c "cd /usr/src/app/ && ./init_kc.sh && npm install && npm start"

@@ -72,7 +72,43 @@ inputs:
               target: _tmp
               fields:
                 tz_offset: local
-
+  - id: nginx-logfile
+    type: logfile
+    streams:
+      # Nginx access logs: Collect Nginx access logs
+      - id: logfile-nginx.access
+        data_stream:
+          dataset: nginx.access
+          type: logs
+        ignore_older: 72h
+        paths:
+          - /var/log/nginx/access.log*
+        tags:
+          - preserve_original_event
+          - nginx-access
+        exclude_files:
+          - .gz$
+        processors:
+          - add_locale: null
+      # Nginx error logs: Collect Nginx error logs
+      - id: logfile-nginx.error
+        data_stream:
+          dataset: nginx.error
+          type: logs
+        ignore_older: 72h
+        paths:
+          - /var/log/nginx/error.log*
+        tags:
+          - preserve_original_event
+          - nginx-error
+        exclude_files:
+          - .gz$
+        multiline:
+          pattern: '^\d{4}\/\d{2}\/\d{2} '
+          negate: true
+          match: after
+        processors:
+          - add_locale: null
   # - id: nginx-access
   #   type: filestream
   #   streams:

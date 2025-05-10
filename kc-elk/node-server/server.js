@@ -51,6 +51,11 @@ app.get("/admin", keycloak.protect("realm:admin"), (req, res) => {
   res.sendFile(path.join(__dirname, "public/admin.html"));
 });
 
+// Critical-only route
+app.get("/critical", keycloak.protect(), (req, res) => {
+  res.sendFile(path.join(__dirname, "public/critical.html"));
+});
+
 // Logout route
 // app.get("/admin", keycloak.protect(), (req, res) => {
 //   keycloak.deauthenticated();
