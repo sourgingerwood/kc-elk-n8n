@@ -1,0 +1,730 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "indexId": ".kibana_alerting_cases_8.17.4_001",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.elasticsearch",
+      "typeVersion": 1,
+      "position": [
+        494,
+        -440
+      ],
+      "id": "723dcdb1-717e-4864-a2ef-b521d768c3db",
+      "name": "Elasticsearch1",
+      "credentials": {
+        "elasticsearchApi": {
+          "id": "k0uqygY3A2yRWOrl",
+          "name": "Elasticsearch account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "876a5dd5-6d47-49c2-a39b-d36a5665c47b",
+              "leftValue": "={{ $json.alert.executionStatus.status }}",
+              "rightValue": "active",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        792,
+        -440
+      ],
+      "id": "dbdd21d6-d713-44e0-9b08-efd612d38ffc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "7843804474",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1828,
+        -290
+      ],
+      "id": "d9006630-885c-46f1-aaa8-607392f3e08d",
+      "name": "Telegram",
+      "webhookId": "09f2a357-dc81-433b-aeeb-6a00158687fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "6MiFbzwlGRbUkvc7",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst result = [];\nfor (const item of $input.all()) {\n  result.push({\n    alert: item.json.alert.name,\n    status: item.json.alert.executionStatus.status == \"active\" ? \"active\" : \"inactive\"\n  })\n}\n\nreturn {state: result};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1012,
+        -440
+      ],
+      "id": "d6c1bd82-b689-403b-afcf-bd4929f6ea91",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        -590
+      ],
+      "id": "15f5604e-0eee-4ec6-8ec4-0a75078a053b",
+      "name": "Telegram Trigger",
+      "webhookId": "84b23c2c-9261-4fdb-b885-f40cb4d7fb3e",
+      "credentials": {
+        "telegramApi": {
+          "id": "6MiFbzwlGRbUkvc7",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }} {{ $json.message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an agent that guess the user intent by default just set it to \"other\" but you can also get him alerts with intent get_alert_state"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -180,
+        -690
+      ],
+      "id": "1d9d5a8c-252d-49db-9f99-959e6cfb9006",
+      "name": "Action decider"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -152,
+        -470
+      ],
+      "id": "906ced29-ea7e-4f09-b8b6-b8731843c72b",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2nKwpkjBCBO1e3Oi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.intent }}",
+                    "rightValue": "other",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8c9eda37-81dd-45ef-a80d-6aae39487af9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "edceb8e4-af2e-4c9b-bb2f-fd75fb56be50",
+                    "leftValue": "={{ $json.output.intent }}",
+                    "rightValue": "get_alert_state",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        196,
+        -590
+      ],
+      "id": "17d7f608-895b-449a-b8c5-c9e3d59b9104",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "7843804474",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        792,
+        -740
+      ],
+      "id": "38b5e9e8-51e6-4bae-906d-1c44c94d5846",
+      "name": "Telegram1",
+      "webhookId": "09f2a357-dc81-433b-aeeb-6a00158687fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "6MiFbzwlGRbUkvc7",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=hi {{ $json.output.text }}",
+        "options": {
+          "systemMessage": "=You are a helpful cybersecurity assistant."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        416,
+        -840
+      ],
+      "id": "5096a85b-178f-4506-a470-b7242402e6ab",
+      "name": "Discussion agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        444,
+        -620
+      ],
+      "id": "a61fd295-a0b0-4fc2-bbac-594c351e26e6",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2nKwpkjBCBO1e3Oi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"intent\":\"say_hello\",\n  \"text\":\"Wassup\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        -470
+      ],
+      "id": "89afe967-e400-4ef6-bb4e-d674918a922a",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "cybersec_assistant"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        564,
+        -620
+      ],
+      "id": "eed69b2c-38f3-4190-a36b-4e2ef88ceba6",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $input.all()[0].json.output;\nconst escapeCharacters = ['_', '[', ']','~', '`', '>', '#', '+',  '=', '|', '{', '*', '}'];\nlet escapedMessage = message;\nescapeCharacters.forEach(char => {\n  const regex = new RegExp(`\\\\${char}`, 'g');\n  escapedMessage = escapedMessage.replace(regex, `\\\\${char}`);\n});\nreturn [{ json: { message: escapedMessage } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1608,
+        -290
+      ],
+      "id": "be6d8364-7522-4eaf-9eac-5f05b8632b82",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "indexId": ".kibana_alerting_cases_8.17.4_001",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.elasticsearch",
+      "typeVersion": 1,
+      "position": [
+        196,
+        -190
+      ],
+      "id": "b5c72099-ee7c-4ea2-bc23-f7f9e865d58d",
+      "name": "Elasticsearch",
+      "credentials": {
+        "elasticsearchApi": {
+          "id": "k0uqygY3A2yRWOrl",
+          "name": "Elasticsearch account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "876a5dd5-6d47-49c2-a39b-d36a5665c47b",
+              "leftValue": "={{ $json.alert.executionStatus.status }}",
+              "rightValue": "active",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        494,
+        -190
+      ],
+      "id": "ac167eec-e990-4645-969b-1343da16ea8e",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst result = [];\nfor (const item of $input.all()) {\n  result.push({\n    alert: item.json.alert.name,\n    status: item.json.alert.executionStatus.status == \"active\" ? \"active\" : \"inactive\"\n  })\n}\n\nreturn {state: result};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        792,
+        -190
+      ],
+      "id": "19a112ec-1865-46f8-a45d-e0b60e4dadda",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -102,
+        -190
+      ],
+      "id": "1a7442a1-2451-498f-88ff-7e00faf6a5fe",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "876a5dd5-6d47-49c2-a39b-d36a5665c47b",
+              "leftValue": "={{ $json.state.toJsonString() }}",
+              "rightValue": "=\"active\"",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1012,
+        -190
+      ],
+      "id": "e69bcd30-b2ef-4383-84b9-ba9651095939",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.state }}",
+        "options": {
+          "systemMessage": "=You are a helpful cybersecurity assistant and your task is to format  {{ $json.state.toJsonString() }} in a human readable format with emojis and stuff in a very short text"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1232,
+        -290
+      ],
+      "id": "78beb797-5ee2-4250-a24d-14e22eab068d",
+      "name": "Action decider1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        -70
+      ],
+      "id": "c99c0686-bd9f-4d0d-ad31-852ce66c34a5",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2nKwpkjBCBO1e3Oi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"intent\":\"say_hello\",\n  \"text\":\"Wassup\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1380,
+        -70
+      ],
+      "id": "b91d01b3-25fb-40f2-a5dc-68ce6cbc4625",
+      "name": "Structured Output Parser1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Elasticsearch1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Action decider1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Action decider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Action decider",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action decider": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Discussion agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Elasticsearch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discussion agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Discussion agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Action decider",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Discussion agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        []
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Elasticsearch": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Elasticsearch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Action decider1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Action decider1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        []
+      ]
+    },
+    "Action decider1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c4300fd3-df58-4009-a6a6-a173e72df8e1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fec6a111ffe98c7d70fcaa8230a7b99233070e1d4e4ae25a58ab3bc53f554809"
+  },
+  "id": "cRGsKVYQjCMGVfX1",
+  "tags": []
+}
